@@ -1,0 +1,1 @@
+avrdude -p atmega128 -c usbasp -U flash:w:%1:i
