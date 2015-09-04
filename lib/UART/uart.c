@@ -314,7 +314,7 @@ Date        Description
 /*
  *  module global variables
  */
-#if defined(AT90_UART)||(ATMEGA_UART)||(ATMEGA_USART)||(ATMEGA_USART0)
+#if defined(AT90_UART)||defined(ATMEGA_UART)||defined(ATMEGA_USART)||defined(ATMEGA_USART0)
 static volatile unsigned char UART_TxBuf[UART_TX_BUFFER_SIZE];
 static volatile unsigned char UART_RxBuf[UART_RX_BUFFER_SIZE];
 static volatile unsigned char UART_TxHead;
@@ -335,7 +335,7 @@ static volatile unsigned char UART1_LastRxError;
 #endif
 
 
-#if defined(AT90_UART)||(ATMEGA_UART)||(ATMEGA_USART)||(ATMEGA_USART0)
+#if defined(AT90_UART)||defined(ATMEGA_UART)||defined(ATMEGA_USART)||defined(ATMEGA_USART0)
 ISR(UART0_RECEIVE_INTERRUPT)
 /*************************************************************************
 Function: UART Receive Complete interrupt
@@ -571,7 +571,11 @@ Returns:  Integer number of bytes in the receive buffer
 **************************************************************************/
 int uart_available(void)
 {
+	if((UART_RxHead - UART_RxTail) == UART_RX_BUFFER_MASK){
+		return UART_RX_BUFFER_MASK;
+	}else{
         return (UART_RX_BUFFER_MASK + UART_RxHead - UART_RxTail) % UART_RX_BUFFER_MASK;
+	}
 }/* uart_available */
 
 
@@ -589,6 +593,27 @@ void uart_flush(void)
 
 #endif // functions for uasrt/usart0 mcus
 
+/*************************************************************************
+Function: uart_get_rx_buff()
+Purpose:  Gets remaining buffer available for receive buffer
+Input:    None
+Returns:  Buffer size - Buffer remaining
+**************************************************************************/
+uint8_t uart_get_rx_buff(void)
+{
+	return UART_RX_BUFFER_SIZE - (UART_RxHead - UART_RxTail);
+}
+
+/*************************************************************************
+Function: uart_get_tx_buff()
+Purpose:  Gets remaining buffer available for transmit buffer
+Input:    None
+Returns:  Buffer size - Buffer remaining
+**************************************************************************/
+uint8_t uart_get_tx_buff(void)
+{
+	return UART_TX_BUFFER_SIZE - (UART_TxHead - UART_TxTail);
+}
 
 /*
  * these functions are only for ATmegas with two USART
